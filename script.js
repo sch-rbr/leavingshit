@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
 
             // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
@@ -40,11 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.addEventListener('mouseenter', function() {
             if (!cluster.hasExploded) {
                 cluster.hasExploded = true;
-                clusterExploded = true;
                 explodeCluster(cluster);
-                
                 setTimeout(() => {
-                    clusterExploded = false;
                     createCluster();
                 }, 0); // Immediate creation of the new cluster
             }
@@ -54,27 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
+        clusterExploded = true;
+
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
 
             const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
             const randomY = Math.random() * 2000 - 1000;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
-            const randomSpeed = Math.random() * 3 + 2; // Varied speed
 
             // Set final positions off-screen and spin values using CSS variables
-            img.style.setProperty('--x', `${randomX}px`);
-            img.style.setProperty('--y', `${randomY}px`);
-            img.style.setProperty('--rotation', `${randomRotation}deg`);
+            img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+            img.style.transition = 'transform 2s linear'; // Ensure continuous movement
 
-            // Start the animation
-            img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
-
-            // Ensure images continue moving off-screen
-            img.addEventListener('animationend', () => {
+            // Ensure images continue moving off-screen and are hidden afterward
+            img.addEventListener('transitionend', () => {
                 img.style.display = 'none'; // Hide the image once off-screen
+
+                // If all images are off-screen, remove the cluster
                 if (Array.from(cluster.children).every(isOffScreen)) {
-                    cluster.remove(); // Remove the cluster after explosion and animations end
+                    cluster.remove();
+                    clusterExploded = false;
                 }
             });
         });
@@ -83,3 +80,4 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial call to create the first cluster
     createCluster();
 });
+
