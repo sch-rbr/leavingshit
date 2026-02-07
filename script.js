@@ -22,8 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
             cluster.appendChild(img);
         }
 
-        // Explosion effect
+        // Immediate Cluster Creation on Explosion
         cluster.addEventListener("mouseenter", () => {
+            // Create new cluster before exploding to ensure smooth transitions
+            createCluster();
+            
             Array.from(cluster.children).forEach((img, index) => {
                 const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
                 const randomY = Math.random() * 2000 - 1000;
@@ -36,15 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 img.style.setProperty('--rotation', `${randomRotation}deg`);
 
                 // Start the animation
-                img.style.animation = `explodeAndSpin ${randomSpeed}s ease-out forwards`;
-
-                // Ensure images continue moving off-screen
-                setTimeout(() => {
-                    img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-                }, 0);
+                img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
             });
 
-            createCluster();
             setTimeout(() => {
                 // Clean up the old cluster after it has moved off-screen
                 cluster.remove();
