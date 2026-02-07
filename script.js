@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createCluster() {
+        if (clusterExploded) return;
+
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
@@ -38,7 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.addEventListener('mouseenter', function() {
             if (!cluster.hasExploded) {
                 cluster.hasExploded = true;
+                clusterExploded = true;
                 explodeCluster(cluster);
+                
+                setTimeout(() => {
+                    clusterExploded = false;
+                    createCluster();
+                }, 0); // Immediate creation of the new cluster
             }
         });
 
@@ -46,13 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
-        clusterExploded = true;
-
-        Array.from(cluster.children).forEach((img, index) => {
+        Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
-            
-            const randomX = Math.random() * 4000 - 2000;  // Larger range for off-screen movement
-            const randomY = Math.random() * 4000 - 2000;
+
+            const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
+            const randomY = Math.random() * 2000 - 1000;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
             const randomSpeed = Math.random() * 3 + 2; // Varied speed
 
@@ -67,14 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Ensure images continue moving off-screen
             img.addEventListener('animationend', () => {
                 img.style.display = 'none'; // Hide the image once off-screen
-
-                // If all images are off-screen, remove the cluster and create a new one
-                if (Array.from(cluster.children).every(child => isOffScreen(child))) {
-                    cluster.remove();
-                    setTimeout(() => {
-                        clusterExploded = false;
-                        createCluster();
-                    }, 500); // Create a new cluster after a short delay
+                if (Array.from(cluster.children).every(isOffScreen)) {
+                    cluster.remove(); // Remove the cluster after explosion and animations end
                 }
             });
         });
