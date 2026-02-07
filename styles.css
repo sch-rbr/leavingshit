@@ -26,5 +26,5 @@ body, html {
 
 @keyframes explodeAndSpin {
     0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-    100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--rotation)); }
+    100% { transform: translate(var(--x), var(--y)) rotate(var(--rotation)); opacity: 1; }
 }
