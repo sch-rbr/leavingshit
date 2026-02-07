@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function createCluster() {
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
-        cluster.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
-        cluster.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+        cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
+        cluster.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
 
         const numImages = Math.floor(Math.random() * 4) + 2; // 2 to 5 images
 
@@ -25,21 +25,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         cluster.addEventListener("mouseenter", () => {
             Array.from(cluster.children).forEach((img, index) => {
-                const randomX = (Math.random() * 400 - 200) + "px";
-                const randomY = (Math.random() * 400 - 200) + "px";
+                const randomX = (Math.random() * 2000 - 1000) + "px";
+                const randomY = (Math.random() * 2000 - 1000) + "px";
+                const randomRotation = (Math.random() * 720 - 360) + "deg";
+                const randomSpeed = Math.random() * 1 + 1;
+
                 img.style.setProperty('--x', randomX);
                 img.style.setProperty('--y', randomY);
-                img.style.animation = `explode 1s ease-out`;
-
-                setTimeout(() => {
-                    img.style.transform = `translate(0, ${window.innerHeight + 100}px)`; // fall off the screen
-                }, 1000); // After explode animation
+                img.style.setProperty('--rotation', randomRotation);
+                img.style.transition = `transform ${randomSpeed}s ease-out`;
+                img.style.animation = `explode 2s ease-out`;
             });
 
             setTimeout(() => {
                 cluster.remove();
                 createCluster();
-            }, 3000); // Wait for fall animation to complete before creating a new cluster
+            }, 2000); // Wait for explode animation to complete before creating a new cluster
         });
 
         body.appendChild(cluster);
