@@ -12,11 +12,12 @@ body, html {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+    animation: fadeIn 1s;
 }
 
 .img-container img {
     position: absolute;
-    transition: transform 4s ease-out, opacity 4s ease-out;
+    transition: transform 4s ease-out;
 }
 
 @keyframes fadeIn {
