@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
+    let isExploding = false;
 
     // Helper function to check if an element is off the screen
     function isOffScreen(element) {
@@ -12,9 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // Function to create a new cluster
     function createCluster() {
-        if (document.querySelectorAll('.img-container').length > 0) return; // Ensure only one active cluster exists
+        if (isExploding) return;
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
             // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
@@ -36,24 +36,20 @@ document.addEventListener("DOMContentLoaded", () => {
             cluster.appendChild(img);
         }
 
-        // Add a flag to the cluster indicating whether it has exploded
         cluster.hasExploded = false;
-        cluster.addEventListener("mouseenter", explodeCluster);
+        cluster.addEventListener('mouseenter', function() {
+            if (!cluster.hasExploded) {
+                cluster.hasExploded = true;
+                explodeCluster(cluster);
+            }
+        });
 
         body.appendChild(cluster);
     }
 
-    // Function to handle exploding the cluster
-    function explodeCluster() {
-        const cluster = this;
+    function explodeCluster(cluster) {
+        isExploding = true;
 
-        // Check if the cluster has already exploded
-        if (cluster.hasExploded) return;
-        cluster.hasExploded = true;
-
-        cluster.style.pointerEvents = 'none'; // Disable further interactions with this cluster
-
-        // Start the explosion process
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
 
@@ -79,7 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Check if all images are off-screen and removed
                     if (Array.from(cluster.children).every(isOffScreen)) {
                         cluster.remove();
-                        createCluster(); // Create a new cluster after the explosion finishes
+                        isExploding = false;
+                        setTimeout(createCluster, 500); // Create a new cluster after a short delay
                     }
                 } else {
                     img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
