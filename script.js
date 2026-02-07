@@ -1,11 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterInProgress = false;
 
-    // Function to create a new cluster
     function createCluster() {
-        if (clusterInProgress) return;
-        clusterInProgress = true;
         console.log("Creating a new cluster");
 
         const cluster = document.createElement('div');
@@ -30,16 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
-            if (!clusterInProgress) return;
             explodeCluster(cluster);
-            // Create a new cluster immediately when the explosion starts
-            createCluster();
+            createCluster(); // Create a new cluster immediately when the explosion starts
         });
 
         body.appendChild(cluster);
     }
 
-    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
         console.log("Exploding cluster");
 
@@ -54,17 +47,18 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
 
+            // Remove images after they transition off-screen
+            // Instead of `display: none`, directly remove the image
             img.addEventListener('transitionend', () => {
-                img.style.display = 'none';
+                img.remove();
             });
         });
 
-        // Remove the cluster after the transition starts
+        // Remove the cluster after a short delay to allow images to start transitioning
         setTimeout(() => {
             cluster.remove();
             console.log("Cluster removed");
-            clusterInProgress = false; // Allow new cluster creation
-        }, 100); // Short delay to let the transition start
+        }, 100); // Very short delay
     }
 
     // Initial call to create the first cluster
