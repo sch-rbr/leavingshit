@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let isExploding = false;
+    let clusterExploded = false;
 
     // Helper function to check if an element is off the screen
     function isOffScreen(element) {
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createCluster() {
-        if (isExploding) return;
+        if (clusterExploded) return;
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
-        isExploding = true;
+        clusterExploded = true;
 
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
@@ -66,13 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Start the animation
             img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
 
-            // Instead of using an interval, let's rely on the animationend event
+            // Once animation ends, ensure the image is off-screen and then remove it
             img.addEventListener('animationend', () => {
                 img.style.display = 'none'; // Hide the image once off-screen
-                // If all images are off-screen, remove the cluster
-                if (Array.from(cluster.children).every(isOffScreen)) {
+                // If all images are off-screen, remove the cluster and create a new one
+                if (Array.from(cluster.children).every(child => isOffScreen(child))) {
                     cluster.remove();
-                    isExploding = false;
+                    clusterExploded = false;
                     setTimeout(createCluster, 500); // Create a new cluster after a short delay
                 }
             });
@@ -82,4 +82,3 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial call to create the first cluster
     createCluster();
 });
-
