@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterExploded = false;
+    let clusterInProgress = false; // Flag to track if a cluster can be created
 
+    // Function to create a new cluster
     function createCluster() {
+        if (clusterInProgress) return;
+
+        clusterInProgress = true;
         console.log("Creating a new cluster");
-        clusterExploded = false;
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -28,17 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
-            if (!clusterExploded) {
-                explodeCluster(cluster);
-            }
+            if (!clusterInProgress) return;
+            clusterInProgress = false;
+            explodeCluster(cluster);
         });
 
         body.appendChild(cluster);
     }
 
+    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
         console.log("Exploding cluster");
-        clusterExploded = true;
 
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none';
@@ -56,14 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Trigger cluster removal and new cluster creation immediately after the explosion starts
-        setTimeout(() => {
-            cluster.remove(); // Remove the current cluster
-            console.log("Cluster removed, creating new cluster");
-            createCluster(); // Create a new cluster
-        }, 100); // Minimal delay before creating a new cluster
+        // Remove the current cluster and create the new one immediately
+        cluster.remove();
+        console.log("Cluster removed, creating new cluster immediately");
+        createCluster();
     }
 
-    createCluster(); // Initial call to create the first cluster
+    // Initial call to create the first cluster
+    createCluster();
 });
-
