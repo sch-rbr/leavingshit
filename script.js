@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const scale = Math.random() * 2 + 1;
             img.style.width = `${50 * scale}px`;
 
-            img.style.position = 'absolute';
             img.style.top = `${Math.random() * 50}px`;
             img.style.left = `${Math.random() * 50}px`;
             cluster.appendChild(img);
@@ -25,27 +24,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         cluster.addEventListener("mouseenter", () => {
             Array.from(cluster.children).forEach((img, index) => {
-                const randomX = (Math.random() * 2500 - 1250) + "px"; // move further away
-                const randomY = (Math.random() * 2500 - 1250) + "px"; // move further away
-                const randomRotation = (Math.random() * 1440 - 720) + "deg"; // spin more
-                const randomSpeed = Math.random() * 2 + 2; // slower to see the effect
+                const randomX = (Math.random() * 2000 - 1000); // wider range to ensure goes off-screen
+                const randomY = (Math.random() * 2000 - 1000);
+                const randomRotation = (Math.random() * 1440 - 720); // spin more
+                const randomSpeed = Math.random() * 3 + 2; // slower to see the effect
+                
+                img.style.setProperty('--x', `${randomX}px`);
+                img.style.setProperty('--y`, `${randomY}px`);
+                img.style.setProperty('--rotation', `${randomRotation}deg`);
+                img.style.transition = `transform ${randomSpeed}s linear, top ${randomSpeed}s linear, left ${randomSpeed}s linear`;
+                img.style.animation = `explode ${randomSpeed}s linear forwards`;
 
-                img.style.setProperty('--x', randomX);
-                img.style.setProperty('--y', randomY);
-                img.style.setProperty('--rotation', randomRotation);
-                img.style.transition = `transform ${randomSpeed}s ease-out`;
-                img.style.animation = `explode ${randomSpeed}s ease-out forwards`;
-
-                // Ensure images continue moving off-screen
+                // Manually set the final transform to ensure the objects go off-screen
                 setTimeout(() => {
-                    img.style.transform = `translate(${randomX}, ${randomY}) rotate(${randomRotation})`;
-                }, 1);
+                    img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+                }, 0);
             });
 
             setTimeout(() => {
                 cluster.remove();
                 createCluster();
-            }, 3000); // Create a new cluster after the animation completes
+            }, 4000); // Wait for the explosion animation to complete before creating a new cluster
         });
 
         body.appendChild(cluster);
