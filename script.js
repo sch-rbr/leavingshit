@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const numImages = Math.floor(Math.random() * 4) + 2; // 2 to 5 images
 
-        for(let i = 0; i < numImages; i++) {
+        for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
             img.src = `img${(i % 3) + 1}.png`; // imgs with names img1.png, img2.png, img3.png
 
@@ -24,28 +24,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         cluster.addEventListener("mouseenter", () => {
             Array.from(cluster.children).forEach((img, index) => {
-                const randomX = Math.random() * 2000 - 1000;
+                const randomX = Math.random() * 2000 - 1000;  // larger range ensures off-screen
                 const randomY = Math.random() * 2000 - 1000;
-                const randomRotation = Math.random() * 1440 - 720;
-                const randomSpeed = Math.random() * 3 + 2;
+                const randomRotation = Math.random() * 1440 - 720; // more rotation for spin
+                const randomSpeed = Math.random() * 3 + 2; // varied speed
 
+                // Final position off-screen
                 img.style.setProperty('--x', `${randomX}px`);
                 img.style.setProperty('--y', `${randomY}px`);
                 img.style.setProperty('--rotation', `${randomRotation}deg`);
-                img.style.transition = `transform ${randomSpeed}s ease-out, opacity ${randomSpeed}s ease-out`;
-                img.style.animation = `explode ${randomSpeed}s ease-out forwards`;
+                img.style.transition = `none`; // Remove transitions
 
-                // Ensure images continue moving off-screen
-                setTimeout(() => {
-                    img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-                    img.style.opacity = '0';
-                }, 0);
+                // Animation for explosion
+                img.style.animation = `explodeAndSpin ${randomSpeed}s ease-out forwards`;
             });
 
             setTimeout(() => {
                 cluster.remove();
                 createCluster();
-            }, 4000); // Wait for the explosion animation to complete before creating a new cluster
+            }, 4000); // Cluster reappears after explosion completes
         });
 
         body.appendChild(cluster);
