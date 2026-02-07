@@ -16,7 +16,7 @@ body, html {
 }
 
 .img-container img {
-    transition: transform 1s ease-out, top 3s ease-out;
+    transition: transform 2s ease-out;
 }
 
 @keyframes fadeIn {
@@ -25,6 +25,6 @@ body, html {
 }
 
 @keyframes explode {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(var(--x), var(--y)); }
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(var(--x), var(--y)) rotate(var(--rotation)); }
 }
