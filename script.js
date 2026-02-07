@@ -10,11 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
         cluster.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
 
-        const numImages = Math.floor(Math.random() * 4) + 2;  // Create 2 to 5 images
+        const numImages = Math.floor(Math.random() * 4) + 2; // Create 2 to 5 images
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`;  // Assuming images are img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
             img.style.position = 'absolute';
@@ -25,18 +25,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
-            if (cluster.dataset.exploded !== "true") {
-                cluster.dataset.exploded = "true";
+            if (cluster.dataset.exploded !== 'true') {
+                cluster.dataset.exploded = 'true';
                 explodeCluster(cluster);
-                createCluster();  // Create a new cluster immediately upon explosion start
+                createCluster(); // Create a new cluster immediately upon explosion start
             }
         });
 
         body.appendChild(cluster);
     }
 
+    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
-        console.log("Exploding cluster");
+        console.log('Exploding cluster');
 
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none';
@@ -50,17 +51,13 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
 
             img.addEventListener('transitionend', () => {
-                img.remove();  // Remove images after they complete their transition
+                img.remove(); // Remove each image after its transition ends
+                if (Array.from(cluster.children).length === 0) {
+                    cluster.remove(); // Remove cluster if all children are removed
+                    console.log('Cluster removed');
+                }
             });
         });
-
-        // Allow the explosion animation to complete before removing the cluster itself
-        setTimeout(() => {
-            if (document.contains(cluster)) {
-                cluster.remove();
-                console.log("Cluster removed");
-            }
-        }, 5000);  // Duration long enough for all transitions
     }
 
     // Initial call to create the first cluster
