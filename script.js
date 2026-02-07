@@ -2,22 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
     let clusterExploded = false;
 
-    // Helper function to check if all elements are off the screen
-    function allOffScreen(elements) {
-        return elements.every(element => {
-            const rect = element.getBoundingClientRect();
-            return (
-                rect.top > window.innerHeight ||
-                rect.left > window.innerWidth ||
-                rect.bottom < 0 ||
-                rect.right < 0
-            );
-        });
+    // Helper function to check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top > window.innerHeight ||
+            rect.left > window.innerWidth ||
+            rect.bottom < 0 ||
+            rect.right < 0
+        );
     }
 
     function createCluster() {
-        if (clusterExploded) return;
-
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
@@ -27,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
             // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
@@ -52,31 +48,36 @@ document.addEventListener("DOMContentLoaded", () => {
     function explodeCluster(cluster) {
         clusterExploded = true;
 
-        const images = Array.from(cluster.children);
-
-        images.forEach((img) => {
+        Array.from(cluster.children).forEach((img, index) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
-
-            const randomX = Math.random() * window.innerWidth * 2 - window.innerWidth;  // Ensure off-screen movement
-            const randomY = Math.random() * window.innerHeight * 2 - window.innerHeight;
+            
+            const randomX = Math.random() * 4000 - 2000;  // Larger range for off-screen movement
+            const randomY = Math.random() * 4000 - 2000;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
+            const randomSpeed = Math.random() * 3 + 2; // Varied speed
 
-            // Apply transformation and transition
-            img.style.transition = `transform 4s linear`;
-            img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+            // Set final positions off-screen and spin values using CSS variables
+            img.style.setProperty('--x', `${randomX}px`);
+            img.style.setProperty('--y', `${randomY}px`);
+            img.style.setProperty('--rotation', `${randomRotation}deg`);
+
+            // Start the animation
+            img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
+
+            // Ensure images continue moving off-screen
+            img.addEventListener('animationend', () => {
+                img.style.display = 'none'; // Hide the image once off-screen
+
+                // If all images are off-screen, remove the cluster and create a new one
+                if (Array.from(cluster.children).every(child => isOffScreen(child))) {
+                    cluster.remove();
+                    setTimeout(() => {
+                        clusterExploded = false;
+                        createCluster();
+                    }, 500); // Create a new cluster after a short delay
+                }
+            });
         });
-
-        // Wait until all animations are supposed to have finished
-        setTimeout(() => {
-            // Remove images and cluster if all are off-screen
-            if (allOffScreen(images)) {
-                images.forEach(img => img.remove());
-                cluster.remove();
-
-                clusterExploded = false;
-                setTimeout(createCluster, 500); // Create a new cluster after a short delay
-            }
-        }, 4000); // 4 seconds matches the transition duration
     }
 
     // Initial call to create the first cluster
