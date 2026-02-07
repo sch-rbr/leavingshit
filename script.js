@@ -65,4 +65,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial call to create the first cluster
     createCluster();
-});
+ });
