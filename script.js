@@ -1,10 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let allowNewCluster = true;
+    let clusterInProgress = false;
 
+    // Function to create a new cluster
     function createCluster() {
-        if (!allowNewCluster) return;
+        if (clusterInProgress) return;
 
+        clusterInProgress = true;
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
@@ -16,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const img = document.createElement('img');
             img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x to 3x
+            // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
@@ -25,43 +27,49 @@ document.addEventListener("DOMContentLoaded", () => {
             cluster.appendChild(img);
         }
 
-        cluster.addEventListener('mouseenter', function(e) {
-            if (allowNewCluster) {
-                allowNewCluster = false;
-                explodeCluster(cluster);
-                setTimeout(createCluster, 100); // Create a new cluster immediately after explosion start
-            }
+        cluster.addEventListener('mouseenter', () => {
+            explodeCluster(cluster);
         });
 
         body.appendChild(cluster);
     }
 
+    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
-        Array.from(cluster.children).forEach(img => {
-            img.style.pointerEvents = 'none'; // Disable interaction for each image to prevent re-trigger
+        Array.from(cluster.children).forEach((img) => {
+            img.style.pointerEvents = 'none'; // Disable further interactions
 
-            const randomX = Math.random() * 2000 - 1000; // Movement range
-            const randomY = Math.random() * 2000 - 1000;
-            const randomRotation = Math.random() * 1440 - 720; // Rotation range
-            const transitionDuration = Math.random() * 3 + 2; // Duration between 2 to 5 seconds
+            const randomX = Math.random() * window.innerWidth * 2 - window.innerWidth;
+            const randomY = Math.random() * window.innerHeight * 2 - window.innerHeight;
+            const randomRotation = Math.random() * 1440 - 720;
+            const randomSpeed = Math.random() * 3 + 2;
 
-            // Apply the transformations
+            img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-            img.style.transition = `transform ${transitionDuration}s linear`;
-
+            
             img.addEventListener('transitionend', () => {
-                img.remove(); // Remove the image once the transition ends
+                img.style.display = 'none'; // Hide the image once off-screen
+
+                if (Array.from(cluster.children).every(isOffScreen)) {
+                    cluster.remove();
+                    setTimeout(createCluster, 500); // Allow time and create new cluster
+                }
             });
         });
+    }
 
-        // Remove the cluster after a delay to wait for all transitions to end
-        setTimeout(() => {
-            cluster.remove();
-            allowNewCluster = true; // Allow creation of new cluster after the previous one has been removed
-        }, 3000); // Use a time slightly longer than any transition duration
+    // Helper function to check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top > window.innerHeight ||
+            rect.left > window.innerWidth ||
+            rect.bottom < 0 ||
+            rect.right < 0
+        );
     }
 
     // Initial call to create the first cluster
     createCluster();
-});
 
+});
