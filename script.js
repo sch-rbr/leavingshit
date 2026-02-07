@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterInProgress = false; // Flag to check if a cluster is in progress
+    let canCreateNewCluster = true;
 
     function createCluster() {
-        if (clusterInProgress) return; // If a cluster is in progress, do not create a new one
+        if (!canCreateNewCluster) return;
 
-        clusterInProgress = true;
+        canCreateNewCluster = false;
+
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         cluster.style.position = 'absolute';
@@ -18,19 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const img = document.createElement('img');
             img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
             img.style.position = 'absolute';
             img.style.top = `${Math.random() * 50}px`;
             img.style.left = `${Math.random() * 50}px`;
-
             cluster.appendChild(img);
         }
 
         cluster.addEventListener('mouseenter', () => {
-            if (!clusterInProgress) return; // Prevent multiple triggers
-
             explodeCluster(cluster);
         });
 
@@ -49,20 +46,28 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
             
-            // Ensure images are removed after the transition
             img.addEventListener('transitionend', () => {
-                img.remove();
+                img.style.display = 'none';
+                if (Array.from(cluster.children).every(isOffScreen)) {
+                    cluster.remove();
+                }
             });
         });
 
-        // Remove the cluster after the longest transition time ends
+        // Set a timeout to create a new cluster, ensuring the current one has exploded thoroughly
         setTimeout(() => {
-            cluster.remove();
-            clusterInProgress = false; // Allow a new cluster to be created
-            createCluster(); // Create a new cluster immediately after the explosion
-        }, 5000); // Using a duration longer than any random speed for safety
+            canCreateNewCluster = true;
+            createCluster(); // Create a new cluster
+        }, 2000); // Adjust timeout based on the slowest possible transition
+    }
+
+    // Helper function to check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return rect.top > window.innerHeight || rect.left > window.innerWidth || rect.bottom < 0 || rect.right < 0;
     }
 
     // Initial call to create the first cluster
     createCluster();
 });
+
