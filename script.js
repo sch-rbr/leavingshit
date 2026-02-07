@@ -56,18 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
             const randomY = Math.random() * 2000 - 1000;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
-            const randomSpeed = Math.random() * 3 + 2; // Varied speed
 
-            // Set final positions off-screen and spin values using CSS variables
-            img.style.setProperty('--x', `${randomX}px`);
-            img.style.setProperty('--y', `${randomY}px`);
-            img.style.setProperty('--rotation', `${randomRotation}deg`);
+            img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+            img.style.transition = `transform ${Math.random() * 3 + 2}s linear`; // Continuous movement, varied speed
 
-            // Start the animation
-            img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
-
-            // Once animation ends, ensure the image is off-screen and then remove it
-            img.addEventListener('animationend', () => {
+            // Track when all images are off-screen
+            img.addEventListener('transitionend', () => {
                 img.style.display = 'none'; // Hide the image once off-screen
                 // If all images are off-screen, remove the cluster and create a new one
                 if (Array.from(cluster.children).every(child => isOffScreen(child))) {
