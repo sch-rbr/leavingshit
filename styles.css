@@ -1,29 +1,26 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+body, html {
     margin: 0;
     padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: white;
+}
+
+.img-container {
+    position: absolute;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    transition: opacity 1s ease-in;
 }
 
-#container {
-    text-align: center;
+.img-container img {
+    width: 50px;
+    transition: transform 0.5s ease-out, top 1s ease-out;
 }
 
-h1 {
-    color: #333;
-}
-
-.art-img {
-    width: 200px;
-    height: auto;
-    margin: 10px;
-    transition: transform 0.3s;
-}
-
-.art-img:hover {
-    transform: scale(1.1);
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
