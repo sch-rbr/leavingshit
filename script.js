@@ -10,12 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
         cluster.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
 
-        const numImages = Math.floor(Math.random() * 4) + 2; // Create 2 to 5 images
+        const numImages = Math.floor(Math.random() * 4) + 2;  // Create 2 to 5 images
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
-
+            img.src = `img${(i % 3) + 1}.png`;  // Assuming images are img1.png, img2.png, img3.png
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
             img.style.position = 'absolute';
@@ -26,8 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
-            explodeCluster(cluster);
-            createCluster(); // Create a new cluster immediately when the explosion starts
+            if (cluster.dataset.exploded !== "true") {
+                cluster.dataset.exploded = "true";
+                explodeCluster(cluster);
+                createCluster();  // Create a new cluster immediately upon explosion start
+            }
         });
 
         body.appendChild(cluster);
@@ -36,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function explodeCluster(cluster) {
         console.log("Exploding cluster");
 
-        Array.from(cluster.children).forEach((img) => {
+        Array.from(cluster.children).forEach((img, index) => {
             img.style.pointerEvents = 'none';
 
             const randomX = Math.random() * 2000 - 1000;
@@ -47,18 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
 
-            // Remove images after they transition off-screen
-            // Instead of `display: none`, directly remove the image
             img.addEventListener('transitionend', () => {
-                img.remove();
+                img.remove();  // Remove images after they complete their transition
             });
         });
 
-        // Remove the cluster after a short delay to allow images to start transitioning
+        // Remove the entire cluster after a longer time to ensure all images are off-screen
         setTimeout(() => {
             cluster.remove();
             console.log("Cluster removed");
-        }, 100); // Very short delay
+        }, 3000);  // Duration long enough for all transitions
     }
 
     // Initial call to create the first cluster
