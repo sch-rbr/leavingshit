@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterExploding = false;
+    let clusterInProgress = false;
 
-    // Helper function to create a cluster and append it to the body
+    // Check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top > window.innerHeight ||
+            rect.left > window.innerWidth ||
+            rect.bottom < 0 ||
+            rect.right < 0
+        );
+    }
+
     function createCluster() {
-        if (clusterExploding) return;
+        // Create a new cluster only if there is no current cluster in progress
+        if (clusterInProgress) return;
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -15,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assume images are img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x and 3x
+            // Randomly scale the image between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
@@ -26,33 +37,18 @@ document.addEventListener("DOMContentLoaded", () => {
             cluster.appendChild(img);
         }
 
-        cluster.addEventListener('mouseenter', function () {
-            if (!clusterExploding) {
-                clusterExploding = true;
+        cluster.addEventListener('mouseenter', function() {
+            if (!clusterInProgress) {
+                clusterInProgress = true;
                 explodeCluster(cluster);
+                setTimeout(createCluster, 10); // Trigger a new cluster immediately
             }
         });
 
         body.appendChild(cluster);
     }
 
-    // Helper function to check if all elements are off the screen
-    function allOffScreen(elements) {
-        return elements.every(element => {
-            const rect = element.getBoundingClientRect();
-            return (
-                rect.top > window.innerHeight ||
-                rect.left > window.innerWidth ||
-                rect.bottom < 0 ||
-                rect.right < 0
-            );
-        });
-    }
-
-    // Handle cluster explosion
     function explodeCluster(cluster) {
-        console.log("Cluster exploding");
-
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
 
@@ -60,22 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const randomY = Math.random() * 2000 - 1000;
             const randomRotation = Math.random() * 1440 - 720;
 
-            // Set final positions off-screen and spin values using CSS variables
+            // Apply transformation and transition
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-            img.style.transition = `transform 2s linear`;
-
-            // Ensure images continue moving off-screen and are hidden afterwards
-            img.addEventListener('transitionend', () => {
-                img.style.display = 'none'; // Hide the image once off-screen
-
-                if (allOffScreen(Array.from(cluster.children))) {
-                    console.log("Cluster fully off-screen, removing");
-                    cluster.remove();
-                    clusterExploding = false;
-                    setTimeout(createCluster, 500); // Create a new cluster after a short delay
-                }
-            });
+            img.style.transition = 'transform 2s linear';
         });
+
+        setTimeout(() => {
+            cluster.remove(); // Remove the cluster after 2 seconds (usually after the transition ends)
+            clusterInProgress = false; // Allow a new cluster to be created
+        }, 2000); // Match the transition duration
     }
 
     // Initial call to create the first cluster
