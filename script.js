@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+ocument.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
     let allowNewCluster = true;
 
@@ -26,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x to 3x
+            // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
@@ -49,6 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Start the explosion process
         Array.from(cluster.children).forEach((img, index) => {
+            // Disable further mouse interactions for this cluster
+            img.style.pointerEvents = 'none';
+
             const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
             const randomY = Math.random() * 2000 - 1000;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
