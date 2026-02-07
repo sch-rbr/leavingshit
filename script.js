@@ -1,31 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterInProgress = false; // Flag to track if a cluster can be created
+    let clusterExploded = false;
 
-    // Function to log messages for debugging
-    function logMessage(message) {
-        console.log(message);
-    }
-
-    // Helper function to check if an element is off the screen
-    function isOffScreen(element) {
-        const rect = element.getBoundingClientRect();
-        return (
-            rect.top > window.innerHeight ||
-            rect.left > window.innerWidth ||
-            rect.bottom < 0 ||
-            rect.right < 0
-        );
-    }
-
+    // Function to create a new cluster
     function createCluster() {
-        if (clusterInProgress) {
-            logMessage("Cluster is already in progress");
-            return;
-        }
-
-        clusterInProgress = true;
-        logMessage("Creating a new cluster");
+        console.log("Creating a new cluster");
+        clusterExploded = false;
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -33,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
         cluster.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
 
-        const numImages = Math.floor(Math.random() * 4) + 2; // 2 to 5 images
+        const numImages = Math.floor(Math.random() * 4) + 2; // Create 2 to 5 images
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
@@ -44,19 +24,23 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.position = 'absolute';
             img.style.top = `${Math.random() * 50}px`;
             img.style.left = `${Math.random() * 50}px`;
+
             cluster.appendChild(img);
         }
 
         cluster.addEventListener('mouseenter', () => {
-            logMessage("Cluster mouseenter: triggering explosion");
-            explodeCluster(cluster);
+            if (!clusterExploded) {
+                explodeCluster(cluster);
+            }
         });
 
         body.appendChild(cluster);
     }
 
+    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
-        logMessage("Exploding cluster");
+        console.log("Exploding cluster");
+        clusterExploded = true;
 
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none';
@@ -71,31 +55,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             img.addEventListener('transitionend', () => {
                 img.style.display = 'none';
-                logMessage("Image transition ended and removed");
-
-                if (Array.from(cluster.children).every(isOffScreen)) {
-                    cluster.remove();
-                    logMessage("Cluster removed");
-
-                    setTimeout(() => {
-                        clusterInProgress = false;
-                        logMessage("Creating new cluster after explosion");
-                        createCluster();
-                    }, 100); // Short delay before creating a new cluster
-                }
             });
         });
 
+        // Use setTimeout to ensure a new cluster is created after the explosion
         setTimeout(() => {
-            if (clusterInProgress) {
-                logMessage("Fallback: Cluster removal");
-                cluster.remove();
-                clusterInProgress = false;
-                createCluster();
-            }
-        }, 5000); // Fallback duration longer than any random speed
+            cluster.remove(); // Remove the current cluster
+            console.log("Cluster removed, creating new cluster");
+            createCluster(); // Create a new cluster
+        }, 3000); // Slightly longer than the maximum transition duration
     }
 
     // Initial call to create the first cluster
     createCluster();
 });
+
