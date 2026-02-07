@@ -1,11 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let canCreateNewCluster = true;
+    let clusterInProgress = false; // Flag to track if a cluster can be created
+
+    // Function to log messages for debugging
+    function logMessage(message) {
+        console.log(message);
+    }
+
+    // Helper function to check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top > window.innerHeight ||
+            rect.left > window.innerWidth ||
+            rect.bottom < 0 ||
+            rect.right < 0
+        );
+    }
 
     function createCluster() {
-        if (!canCreateNewCluster) return;
+        if (clusterInProgress) {
+            logMessage("Cluster is already in progress");
+            return;
+        }
 
-        canCreateNewCluster = false;
+        clusterInProgress = true;
+        logMessage("Creating a new cluster");
 
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -28,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
+            logMessage("Cluster mouseenter: triggering explosion");
             explodeCluster(cluster);
         });
 
@@ -35,8 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
+        logMessage("Exploding cluster");
+
         Array.from(cluster.children).forEach((img) => {
-            img.style.pointerEvents = 'none'; // Disable interaction for each image
+            img.style.pointerEvents = 'none';
 
             const randomX = Math.random() * 2000 - 1000;
             const randomY = Math.random() * 2000 - 1000;
@@ -45,29 +68,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
             img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-            
+
             img.addEventListener('transitionend', () => {
                 img.style.display = 'none';
+                logMessage("Image transition ended and removed");
+
                 if (Array.from(cluster.children).every(isOffScreen)) {
                     cluster.remove();
+                    logMessage("Cluster removed");
+
+                    setTimeout(() => {
+                        clusterInProgress = false;
+                        logMessage("Creating new cluster after explosion");
+                        createCluster();
+                    }, 100); // Short delay before creating a new cluster
                 }
             });
         });
 
-        // Set a timeout to create a new cluster, ensuring the current one has exploded thoroughly
         setTimeout(() => {
-            canCreateNewCluster = true;
-            createCluster(); // Create a new cluster
-        }, 2000); // Adjust timeout based on the slowest possible transition
-    }
-
-    // Helper function to check if an element is off the screen
-    function isOffScreen(element) {
-        const rect = element.getBoundingClientRect();
-        return rect.top > window.innerHeight || rect.left > window.innerWidth || rect.bottom < 0 || rect.right < 0;
+            if (clusterInProgress) {
+                logMessage("Fallback: Cluster removal");
+                cluster.remove();
+                clusterInProgress = false;
+                createCluster();
+            }
+        }, 5000); // Fallback duration longer than any random speed
     }
 
     // Initial call to create the first cluster
     createCluster();
 });
-
