@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
     let clusterExploded = false;
 
-    // Function to create a new cluster
     function createCluster() {
         console.log("Creating a new cluster");
         clusterExploded = false;
@@ -37,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
         body.appendChild(cluster);
     }
 
-    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
         console.log("Exploding cluster");
         clusterExploded = true;
@@ -58,15 +56,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Use setTimeout to ensure a new cluster is created after the explosion
+        // Trigger cluster removal and new cluster creation immediately after the explosion starts
         setTimeout(() => {
             cluster.remove(); // Remove the current cluster
             console.log("Cluster removed, creating new cluster");
             createCluster(); // Create a new cluster
-        }, 3000); // Slightly longer than the maximum transition duration
+        }, 100); // Minimal delay before creating a new cluster
     }
 
-    // Initial call to create the first cluster
-    createCluster();
+    createCluster(); // Initial call to create the first cluster
 });
 
