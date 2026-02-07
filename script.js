@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
+    let allowNewCluster = true;
 
     // Helper function to check if an element is off the screen
     function isOffScreen(element) {
@@ -13,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createCluster() {
+        if (!allowNewCluster) return;
+        allowNewCluster = false;
+
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
@@ -22,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
 
             // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
@@ -35,9 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Immediate cluster creation on explosion
         cluster.addEventListener("mouseenter", () => {
-            // Create new cluster before exploding to ensure smooth transitions
-            createCluster();
-
+            // Start the explosion process
             Array.from(cluster.children).forEach((img, index) => {
                 const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
                 const randomY = Math.random() * 2000 - 1000;
@@ -51,11 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Start the animation
                 img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
-                
+
                 // Continue moving until off-screen
                 const continueMoving = setInterval(() => {
                     if (isOffScreen(img)) {
                         clearInterval(continueMoving);
+                        img.style.display = 'none';
                     } else {
                         img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
                     }
@@ -66,6 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Clean up the old cluster after it has moved off-screen
                 cluster.remove();
             }, 4000); // Ensure objects leave the screen
+
+            // Allow creation of a new cluster
+            setTimeout(() => {
+                allowNewCluster = true;
+                createCluster();
+            }, 0); // Immediately allow new cluster creation
         });
 
         body.appendChild(cluster);
