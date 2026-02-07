@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const numImages = Math.floor(Math.random() * 4) + 2; // 2 to 5 images
 
-        for(let i = 0; i < numImages; i++) {
+        for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
             img.src = `img${(i % 3) + 1}.png`; // imgs with names img1.png, img2.png, img3.png
 
@@ -25,28 +25,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         cluster.addEventListener("mouseenter", () => {
             Array.from(cluster.children).forEach((img, index) => {
-                const randomX = (Math.random() * 2000 - 1000) + "px";
-                const randomY = (Math.random() * 2000 - 1000) + "px";
-                const randomRotation = (Math.random() * 720 - 360) + "deg";
-                const randomSpeed = Math.random() * 1 + 1;
+                const randomX = (Math.random() * 2500 - 1250) + "px"; // move further away
+                const randomY = (Math.random() * 2500 - 1250) + "px"; // move further away
+                const randomRotation = (Math.random() * 1440 - 720) + "deg"; // spin more
+                const randomSpeed = Math.random() * 2 + 2; // slower to see the effect
 
                 img.style.setProperty('--x', randomX);
                 img.style.setProperty('--y', randomY);
                 img.style.setProperty('--rotation', randomRotation);
                 img.style.transition = `transform ${randomSpeed}s ease-out`;
-                img.style.animation = `explode 2s ease-out`;
+                img.style.animation = `explode ${randomSpeed}s ease-out forwards`;
+
+                // Ensure images continue moving off-screen
+                setTimeout(() => {
+                    img.style.transform = `translate(${randomX}, ${randomY}) rotate(${randomRotation})`;
+                }, 1);
             });
 
             setTimeout(() => {
                 cluster.remove();
                 createCluster();
-            }, 2000); // Wait for explode animation to complete before creating a new cluster
+            }, 3000); // Create a new cluster after the animation completes
         });
 
         body.appendChild(cluster);
         cluster.style.animation = "fadeIn 1s";
     }
-    
+
     createCluster();
 });
-
