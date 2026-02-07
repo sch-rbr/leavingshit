@@ -1,6 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
 
+    // Helper function to check if an element is off the screen
+    function isOffScreen(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top > window.innerHeight ||
+            rect.left > window.innerWidth ||
+            rect.bottom < 0 ||
+            rect.right < 0
+        );
+    }
+
     function createCluster() {
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
@@ -11,9 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x to 3x
+            // Randomly scale the size between 0.5x and 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
@@ -22,11 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
             cluster.appendChild(img);
         }
 
-        // Immediate Cluster Creation on Explosion
+        // Immediate cluster creation on explosion
         cluster.addEventListener("mouseenter", () => {
             // Create new cluster before exploding to ensure smooth transitions
             createCluster();
-            
+
             Array.from(cluster.children).forEach((img, index) => {
                 const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
                 const randomY = Math.random() * 2000 - 1000;
@@ -40,6 +51,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Start the animation
                 img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
+                
+                // Continue moving until off-screen
+                const continueMoving = setInterval(() => {
+                    if (isOffScreen(img)) {
+                        clearInterval(continueMoving);
+                    } else {
+                        img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+                    }
+                }, 16); // Roughly 60 frames per second
             });
 
             setTimeout(() => {
