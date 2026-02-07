@@ -26,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
+            img.src = `img${(i % 3) + 1}.png`; // img1.png, img2.png, img3.png
 
-            // Randomly scale the size between 0.5x and 3x
+            // Randomly scale the size between 0.5x to 3x
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
@@ -38,46 +38,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Immediate cluster creation on explosion
-        cluster.addEventListener("mouseenter", () => {
-            // Start the explosion process
-            Array.from(cluster.children).forEach((img, index) => {
-                const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
-                const randomY = Math.random() * 2000 - 1000;
-                const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
-                const randomSpeed = Math.random() * 3 + 2; // Varied speed
-
-                // Set final positions off-screen and spin values using CSS variables
-                img.style.setProperty('--x', `${randomX}px`);
-                img.style.setProperty('--y', `${randomY}px`);
-                img.style.setProperty('--rotation', `${randomRotation}deg`);
-
-                // Start the animation
-                img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
-
-                // Continue moving until off-screen
-                const continueMoving = setInterval(() => {
-                    if (isOffScreen(img)) {
-                        clearInterval(continueMoving);
-                        img.style.display = 'none';
-                    } else {
-                        img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
-                    }
-                }, 16); // Roughly 60 frames per second
-            });
-
-            setTimeout(() => {
-                // Clean up the old cluster after it has moved off-screen
-                cluster.remove();
-            }, 4000); // Ensure objects leave the screen
-
-            // Allow creation of a new cluster
-            setTimeout(() => {
-                allowNewCluster = true;
-                createCluster();
-            }, 0); // Immediately allow new cluster creation
-        });
+        cluster.addEventListener("mouseenter", explodeCluster);
 
         body.appendChild(cluster);
+    }
+
+    function explodeCluster() {
+        const cluster = this;
+        cluster.removeEventListener("mouseenter", explodeCluster); // Prevent additional interactions
+
+        // Start the explosion process
+        Array.from(cluster.children).forEach((img, index) => {
+            const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
+            const randomY = Math.random() * 2000 - 1000;
+            const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
+            const randomSpeed = Math.random() * 3 + 2; // Varied speed
+
+            // Set final positions off-screen and spin values using CSS variables
+            img.style.setProperty('--x', `${randomX}px`);
+            img.style.setProperty('--y', `${randomY}px`);
+            img.style.setProperty('--rotation', `${randomRotation}deg`);
+
+            // Start the animation
+            img.style.animation = `explodeAndSpin ${randomSpeed}s linear forwards`;
+            
+            // Ensure images continue moving off-screen
+            const continueMoving = setInterval(() => {
+                if (isOffScreen(img)) {
+                    clearInterval(continueMoving);
+                    img.style.display = 'none'; // Hide the image once off-screen
+                } else {
+                    img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+                }
+            }, 16); // Roughly 60 frames per second
+        });
+
+        setTimeout(() => {
+            // Clean up the old cluster after it has moved off-screen
+            cluster.remove();
+
+            // Allow creation of a new cluster
+            allowNewCluster = true;
+            createCluster();
+        }, 4000); // Ensure objects leave the screen
     }
 
     createCluster();
