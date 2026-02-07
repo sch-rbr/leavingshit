@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let clusterInProgress = false; // Flag to track if a cluster can be created
+    let clusterInProgress = false;
 
     // Function to create a new cluster
     function createCluster() {
         if (clusterInProgress) return;
-
         clusterInProgress = true;
         console.log("Creating a new cluster");
 
@@ -32,8 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         cluster.addEventListener('mouseenter', () => {
             if (!clusterInProgress) return;
-            clusterInProgress = false;
             explodeCluster(cluster);
+            // Create a new cluster immediately when the explosion starts
+            createCluster();
         });
 
         body.appendChild(cluster);
@@ -59,10 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Remove the current cluster and create the new one immediately
-        cluster.remove();
-        console.log("Cluster removed, creating new cluster immediately");
-        createCluster();
+        // Remove the cluster after the transition starts
+        setTimeout(() => {
+            cluster.remove();
+            console.log("Cluster removed");
+            clusterInProgress = false; // Allow new cluster creation
+        }, 100); // Short delay to let the transition start
     }
 
     // Initial call to create the first cluster
