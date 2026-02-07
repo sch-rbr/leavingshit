@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cluster.addEventListener('mouseenter', () => {
-            if (cluster.dataset.exploded !== 'true') {
-                cluster.dataset.exploded = 'true';
+            if (!cluster.dataset.exploding) {
+                cluster.dataset.exploding = 'true';
                 explodeCluster(cluster);
                 createCluster(); // Create a new cluster immediately upon explosion start
             }
@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
         body.appendChild(cluster);
     }
 
-    // Function to handle the explosion of a cluster
     function explodeCluster(cluster) {
         console.log('Exploding cluster');
 
@@ -50,11 +49,14 @@ document.addEventListener("DOMContentLoaded", () => {
             img.style.transition = `transform ${randomSpeed}s linear`;
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
 
+            // Remove image after its transition ends
             img.addEventListener('transitionend', () => {
-                img.remove(); // Remove each image after its transition ends
-                if (Array.from(cluster.children).length === 0) {
-                    cluster.remove(); // Remove cluster if all children are removed
-                    console.log('Cluster removed');
+                img.remove();
+
+                // Check if all images in the cluster have been removed
+                if (cluster.children.length === 0) {
+                    cluster.remove(); // Remove the cluster itself
+                    console.log('Cluster removed after all images exploded');
                 }
             });
         });
