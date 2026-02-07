@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none'; // Disable interaction for each image
 
-            const randomX = Math.random() * 2000 - 1000;  // Larger range for off-screen movement
-            const randomY = Math.random() * 2000 - 1000;
+            const randomX = Math.random() * 3000 - 1500;  // Larger range for off-screen movement
+            const randomY = Math.random() * 3000 - 1500;
             const randomRotation = Math.random() * 1440 - 720; // More rotation for spin
             const randomSpeed = Math.random() * 3 + 2; // Varied speed
 
@@ -68,21 +68,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Ensure images continue moving off-screen
             const continueMoving = setInterval(() => {
+                img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
                 if (isOffScreen(img)) {
                     clearInterval(continueMoving);
                     img.style.display = 'none'; // Hide the image once off-screen
-
-                    // Check if all images are off-screen and removed
-                    if (Array.from(cluster.children).every(isOffScreen)) {
-                        cluster.remove();
-                        isExploding = false;
-                        setTimeout(createCluster, 500); // Create a new cluster after a short delay
-                    }
-                } else {
-                    img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
                 }
             }, 16); // Roughly 60 frames per second
         });
+
+        const checkIfClusterIsOffScreen = setInterval(() => {
+            if (Array.from(cluster.children).every(isOffScreen)) {
+                clearInterval(checkIfClusterIsOffScreen);
+                cluster.remove();
+                isExploding = false;
+                setTimeout(createCluster, 500); // Create a new cluster after a short delay
+            }
+        }, 100); // Check every 100ms if all images are off-screen
     }
 
     // Initial call to create the first cluster
