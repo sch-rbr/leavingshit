@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function explodeCluster(cluster) {
         console.log("Exploding cluster");
 
-        Array.from(cluster.children).forEach((img, index) => {
+        Array.from(cluster.children).forEach((img) => {
             img.style.pointerEvents = 'none';
 
             const randomX = Math.random() * 2000 - 1000;
@@ -54,11 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Remove the entire cluster after a longer time to ensure all images are off-screen
+        // Allow the explosion animation to complete before removing the cluster itself
         setTimeout(() => {
-            cluster.remove();
-            console.log("Cluster removed");
-        }, 3000);  // Duration long enough for all transitions
+            if (document.contains(cluster)) {
+                cluster.remove();
+                console.log("Cluster removed");
+            }
+        }, 5000);  // Duration long enough for all transitions
     }
 
     // Initial call to create the first cluster
