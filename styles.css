@@ -11,15 +11,16 @@ body {
 .img-container {
     position: absolute;
     cursor: crosshair; 
-    /* Centers the container so the explosion creates from the center of the mouse */
+    /* Center the pivot point so explosions feel centered */
     transform: translate(-50%, -50%);
 }
 
 .cluster-img {
     position: absolute;
     display: block;
-    background-color: rgba(0,0,0,0.1); /* Placeholder color */
+    background-color: rgba(0,0,0,0.1); 
     user-select: none;
-    will-change: transform; 
-    /* Note: No CSS transition here anymore! */
+    /* CRITICAL: Ensure no default transitions exist on the class */
+    transition: none !important; 
+    will-change: transform;
 }
