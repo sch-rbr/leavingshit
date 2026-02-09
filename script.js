@@ -7,21 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
         padding: 100,
         imgCountMin: 3,
         imgCountMax: 6,
-        images: ['img1.png', 'img2.png', 'img3.png'],
+        images: ['img1.png', 'img2.png', 'img3.png'], // Ensure these exist
         
-        // Physics Variables
-        gravity: 0.8,       // How strong is the downward pull? (Higher = heavier)
-        power: 15,          // How hard is the initial explosion?
-        drag: 0.99,         // Air resistance (0.99 = 1% slowdown per frame on X axis)
-        rotationSpeed: 10   // How fast they spin
+        // --- PHYSICS TWEAKS ---
+        gravity: 1.5,       // High gravity (1.5 is heavy)
+        drag: 0.98,         // Air resistance (slows down sideways movement)
+        
+        // Initial Explosion Force
+        horizontalSpeed: 25, // Powerful sideways blast
+        verticalLift: 5,     // Very low upward lift (prevents flying to top of screen)
+        
+        rotationSpeed: 15    // Fast spin
     };
 
     function createCluster() {
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         
+        // Keep spawn area slightly higher so they have room to fall
         const x = Math.random() * (window.innerWidth - config.padding * 2) + config.padding;
-        const y = Math.random() * (window.innerHeight - config.padding * 2) + config.padding;
+        const y = Math.random() * (window.innerHeight / 1.5) + config.padding; // Restrict spawn to top 2/3rds
         
         cluster.style.left = `${x}px`;
         cluster.style.top = `${y}px`;
@@ -37,9 +42,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
-            // Center them in the cluster
+            // Center images in the cluster initially
             img.style.left = '0px';
             img.style.top = '0px';
+            img.style.transform = 'translate(-50%, -50%)'; // Ensure true centering
 
             cluster.appendChild(img);
         }
@@ -59,35 +65,33 @@ document.addEventListener("DOMContentLoaded", () => {
         cluster.style.pointerEvents = 'none';
         const children = Array.from(cluster.children);
         let activeParticles = children.length;
+        
+        // Get the cluster's absolute starting position
+        const rect = cluster.getBoundingClientRect();
+        const startX = rect.left;
+        const startY = rect.top;
 
         children.forEach((img) => {
             // 1. Set Initial Velocities
-            // Random angle for explosion (0 to 360 degrees)
-            const angle = Math.random() * Math.PI * 2;
-            // Random force
-            const force = Math.random() * config.power + (config.power / 2);
-
-            // Calculate X and Y velocity based on angle
-            let velocityX = Math.cos(angle) * force;
-            let velocityY = Math.sin(angle) * force;
-
-            // Make the explosion feel like it pops UP first (-Y is up in CSS)
-            // We bias the random angle slightly upwards or just ensure pure random chaos?
-            // Let's add an explicit "Upward Pop" bias to fight gravity initially
-            velocityY -= 5; 
+            
+            // X: Strong random push left or right
+            let velocityX = (Math.random() - 0.5) * config.horizontalSpeed * 2;
+            
+            // Y: Mostly flat, with a tiny bit of random up/down variation
+            // This ensures they don't fly up, they just burst out and fall
+            let velocityY = (Math.random() * -config.verticalLift); 
 
             let posX = 0;
             let posY = 0;
-            
             let rotation = 0;
             const rotSpeed = (Math.random() - 0.5) * config.rotationSpeed;
 
-            // 2. The Animation Loop (Per Particle)
+            // 2. Animation Loop
             function animate() {
-                // Apply Gravity
+                // Apply Gravity (constant downward acceleration)
                 velocityY += config.gravity;
                 
-                // Apply Air Resistance to sideways movement (optional, stops them floating forever)
+                // Apply Drag (slows X speed over time)
                 velocityX *= config.drag;
 
                 // Update Position
@@ -95,19 +99,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 posY += velocityY;
                 rotation += rotSpeed;
 
-                // Apply Styles
+                // Apply Visuals
                 img.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
 
-                // 3. Check Bounds (Kill particle if it falls off screen)
-                // Get the cluster's absolute position to calculate relative screen drop
-                const clusterRect = cluster.getBoundingClientRect();
-                const absoluteY = clusterRect.top + posY;
-
-                if (absoluteY < window.innerHeight + 200) {
-                    // Keep animating if still on screen
+                // 3. Cleanup Check
+                // Calculate absolute Y position to see if it's off-screen
+                if ((startY + posY) < window.innerHeight + 100) {
                     requestAnimationFrame(animate);
                 } else {
-                    // Remove particle
+                    // It has fallen off the bottom
                     img.remove();
                     activeParticles--;
                     if (activeParticles === 0) {
@@ -115,8 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             }
-
-            // Kick off the loop
+            
             requestAnimationFrame(animate);
         });
     }
