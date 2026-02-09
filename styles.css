@@ -1,31 +1,24 @@
-body, html {
+body {
     margin: 0;
     padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background-color: white;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Prevents scrollbars when pieces fly off-screen */
+    background-color: #f0f0f0; /* Neutral background */
+    position: relative;
 }
 
 .img-container {
     position: absolute;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    animation: fadeIn 1s;
+    /* Cursor indicates interactivity */
+    cursor: crosshair; 
 }
 
-.img-container img {
+.cluster-img {
     position: absolute;
-    opacity: 1;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes explodeAndSpin {
-    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-    100% { transform: translate(var(--x), var(--y)) rotate(var(--rotation)); opacity: 1; }
+    display: block;
+    /* Fallback color if images miss; remove this line if transparent pngs look bad with it */
+    background-color: rgba(0,0,0,0.1); 
+    user-select: none;
+    will-change: transform; /* Performance optimization for animations */
 }
