@@ -3,22 +3,23 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-    overflow: hidden; /* Prevents scrollbars when pieces fly off-screen */
-    background-color: #f0f0f0; /* Neutral background */
+    overflow: hidden; 
+    background-color: #f0f0f0; 
     position: relative;
 }
 
 .img-container {
     position: absolute;
-    /* Cursor indicates interactivity */
     cursor: crosshair; 
+    /* Centers the container so the explosion creates from the center of the mouse */
+    transform: translate(-50%, -50%);
 }
 
 .cluster-img {
     position: absolute;
     display: block;
-    /* Fallback color if images miss; remove this line if transparent pngs look bad with it */
-    background-color: rgba(0,0,0,0.1); 
+    background-color: rgba(0,0,0,0.1); /* Placeholder color */
     user-select: none;
-    will-change: transform; /* Performance optimization for animations */
+    will-change: transform; 
+    /* Note: No CSS transition here anymore! */
 }
