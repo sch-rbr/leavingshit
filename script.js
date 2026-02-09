@@ -1,34 +1,56 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
+    let zIndexCounter = 1000; // Ensures new clusters appear on top
+
+    // Configuration
+    const config = {
+        padding: 200, // Keep clusters away from the very edge
+        imgCountMin: 2,
+        imgCountMax: 5,
+        scatterDistance: 1500, // How far pieces fly
+        rotationMax: 720,
+        speedMin: 2, // Seconds
+        speedMax: 4, // Seconds
+        images: ['img1.png', 'img2.png', 'img3.png'] // Your image files
+    };
 
     function createCluster() {
-        console.log("Creating a new cluster");
-
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
-        cluster.style.position = 'absolute';
-        cluster.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
-        cluster.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
+        
+        // Position cluster within safe bounds
+        const x = Math.random() * (window.innerWidth - config.padding);
+        const y = Math.random() * (window.innerHeight - config.padding);
+        
+        cluster.style.left = `${x}px`;
+        cluster.style.top = `${y}px`;
+        cluster.style.zIndex = zIndexCounter++; // Increment Z-index for stacking
 
-        const numImages = Math.floor(Math.random() * 4) + 2; // Create 2 to 5 images
+        // Generate Images
+        const numImages = Math.floor(Math.random() * (config.imgCountMax - config.imgCountMin + 1)) + config.imgCountMin;
 
         for (let i = 0; i < numImages; i++) {
             const img = document.createElement('img');
-            img.src = `img${(i % 3) + 1}.png`; // Assuming images are img1.png, img2.png, img3.png
+            img.src = config.images[i % config.images.length]; 
+            img.classList.add('cluster-img');
+
+            // Random Scale
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
-            img.style.position = 'absolute';
+
+            // Random slight offset within the cluster center
             img.style.top = `${Math.random() * 50}px`;
             img.style.left = `${Math.random() * 50}px`;
 
             cluster.appendChild(img);
         }
 
+        // Interaction Listener
         cluster.addEventListener('mouseenter', () => {
             if (!cluster.dataset.exploding) {
                 cluster.dataset.exploding = 'true';
                 explodeCluster(cluster);
-                createCluster(); // Create a new cluster immediately upon explosion start
+                createCluster(); // Immediate respawn
             }
         });
 
@@ -36,32 +58,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
-        console.log('Exploding cluster');
+        // Prevent interaction with exploding pieces
+        cluster.style.pointerEvents = 'none';
 
-        Array.from(cluster.children).forEach((img) => {
-            img.style.pointerEvents = 'none';
+        const children = Array.from(cluster.children);
+        let completedAnimations = 0;
 
-            const randomX = Math.random() * 2000 - 1000;
-            const randomY = Math.random() * 2000 - 1000;
-            const randomRotation = Math.random() * 1440 - 720;
-            const randomSpeed = Math.random() * 3 + 2;
+        children.forEach((img) => {
+            // Physics calculations
+            const randomX = (Math.random() - 0.5) * config.scatterDistance * 2;
+            const randomY = (Math.random() - 0.5) * config.scatterDistance * 2;
+            const randomRotation = (Math.random() - 0.5) * config.rotationMax * 2;
+            const duration = Math.random() * (config.speedMax - config.speedMin) + config.speedMin;
 
-            img.style.transition = `transform ${randomSpeed}s linear`;
+            // Apply transition using Ease-Out (Fast start, slow end)
+            img.style.transition = `transform ${duration}s cubic-bezier(0.25, 1, 0.5, 1)`;
+            
+            // Force reflow to ensure transition registers (rare browser quirk fix)
+            void img.offsetWidth; 
+
             img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
 
-            // Remove image after its transition ends
-            img.addEventListener('transitionend', () => {
+            // Cleanup Logic
+            const cleanup = () => {
                 img.remove();
-
-                // Check if all images in the cluster have been removed
-                if (cluster.children.length === 0) {
-                    cluster.remove(); // Remove the cluster itself
-                    console.log('Cluster removed after all images exploded');
+                completedAnimations++;
+                // Remove parent cluster only when empty
+                if (completedAnimations === children.length) {
+                    cluster.remove();
                 }
-            });
+            };
+
+            // Primary cleanup trigger
+            img.addEventListener('transitionend', cleanup, { once: true });
+
+            // Failsafe: Force cleanup if transitionend misses (browser tab inactive, etc)
+            setTimeout(cleanup, (duration * 1000) + 100); 
         });
     }
 
-    // Initial call to create the first cluster
+    // Start the loop
     createCluster();
 });
