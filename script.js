@@ -1,32 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
-    let zIndexCounter = 1000; // Ensures new clusters appear on top
+    let zIndexCounter = 1000; 
 
-    // Configuration
+    // PHYSICS CONFIGURATION
     const config = {
-        padding: 200, // Keep clusters away from the very edge
-        imgCountMin: 2,
-        imgCountMax: 5,
-        scatterDistance: 1500, // How far pieces fly
-        rotationMax: 720,
-        speedMin: 2, // Seconds
-        speedMax: 4, // Seconds
-        images: ['img1.png', 'img2.png', 'img3.png'] // Your image files
+        padding: 100,
+        imgCountMin: 3,
+        imgCountMax: 6,
+        images: ['img1.png', 'img2.png', 'img3.png'],
+        
+        // Physics Variables
+        gravity: 0.8,       // How strong is the downward pull? (Higher = heavier)
+        power: 15,          // How hard is the initial explosion?
+        drag: 0.99,         // Air resistance (0.99 = 1% slowdown per frame on X axis)
+        rotationSpeed: 10   // How fast they spin
     };
 
     function createCluster() {
         const cluster = document.createElement('div');
         cluster.classList.add('img-container');
         
-        // Position cluster within safe bounds
-        const x = Math.random() * (window.innerWidth - config.padding);
-        const y = Math.random() * (window.innerHeight - config.padding);
+        const x = Math.random() * (window.innerWidth - config.padding * 2) + config.padding;
+        const y = Math.random() * (window.innerHeight - config.padding * 2) + config.padding;
         
         cluster.style.left = `${x}px`;
         cluster.style.top = `${y}px`;
-        cluster.style.zIndex = zIndexCounter++; // Increment Z-index for stacking
+        cluster.style.zIndex = zIndexCounter++; 
 
-        // Generate Images
         const numImages = Math.floor(Math.random() * (config.imgCountMax - config.imgCountMin + 1)) + config.imgCountMin;
 
         for (let i = 0; i < numImages; i++) {
@@ -34,23 +34,21 @@ document.addEventListener("DOMContentLoaded", () => {
             img.src = config.images[i % config.images.length]; 
             img.classList.add('cluster-img');
 
-            // Random Scale
             const scale = Math.random() * 2.5 + 0.5;
             img.style.width = `${50 * scale}px`;
 
-            // Random slight offset within the cluster center
-            img.style.top = `${Math.random() * 50}px`;
-            img.style.left = `${Math.random() * 50}px`;
+            // Center them in the cluster
+            img.style.left = '0px';
+            img.style.top = '0px';
 
             cluster.appendChild(img);
         }
 
-        // Interaction Listener
         cluster.addEventListener('mouseenter', () => {
             if (!cluster.dataset.exploding) {
                 cluster.dataset.exploding = 'true';
                 explodeCluster(cluster);
-                createCluster(); // Immediate respawn
+                createCluster(); 
             }
         });
 
@@ -58,45 +56,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function explodeCluster(cluster) {
-        // Prevent interaction with exploding pieces
         cluster.style.pointerEvents = 'none';
-
         const children = Array.from(cluster.children);
-        let completedAnimations = 0;
+        let activeParticles = children.length;
 
         children.forEach((img) => {
-            // Physics calculations
-            const randomX = (Math.random() - 0.5) * config.scatterDistance * 2;
-            const randomY = (Math.random() - 0.5) * config.scatterDistance * 2;
-            const randomRotation = (Math.random() - 0.5) * config.rotationMax * 2;
-            const duration = Math.random() * (config.speedMax - config.speedMin) + config.speedMin;
+            // 1. Set Initial Velocities
+            // Random angle for explosion (0 to 360 degrees)
+            const angle = Math.random() * Math.PI * 2;
+            // Random force
+            const force = Math.random() * config.power + (config.power / 2);
 
-            // Apply transition using Ease-Out (Fast start, slow end)
-            img.style.transition = `transform ${duration}s cubic-bezier(0.25, 1, 0.5, 1)`;
+            // Calculate X and Y velocity based on angle
+            let velocityX = Math.cos(angle) * force;
+            let velocityY = Math.sin(angle) * force;
+
+            // Make the explosion feel like it pops UP first (-Y is up in CSS)
+            // We bias the random angle slightly upwards or just ensure pure random chaos?
+            // Let's add an explicit "Upward Pop" bias to fight gravity initially
+            velocityY -= 5; 
+
+            let posX = 0;
+            let posY = 0;
             
-            // Force reflow to ensure transition registers (rare browser quirk fix)
-            void img.offsetWidth; 
+            let rotation = 0;
+            const rotSpeed = (Math.random() - 0.5) * config.rotationSpeed;
 
-            img.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+            // 2. The Animation Loop (Per Particle)
+            function animate() {
+                // Apply Gravity
+                velocityY += config.gravity;
+                
+                // Apply Air Resistance to sideways movement (optional, stops them floating forever)
+                velocityX *= config.drag;
 
-            // Cleanup Logic
-            const cleanup = () => {
-                img.remove();
-                completedAnimations++;
-                // Remove parent cluster only when empty
-                if (completedAnimations === children.length) {
-                    cluster.remove();
+                // Update Position
+                posX += velocityX;
+                posY += velocityY;
+                rotation += rotSpeed;
+
+                // Apply Styles
+                img.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+
+                // 3. Check Bounds (Kill particle if it falls off screen)
+                // Get the cluster's absolute position to calculate relative screen drop
+                const clusterRect = cluster.getBoundingClientRect();
+                const absoluteY = clusterRect.top + posY;
+
+                if (absoluteY < window.innerHeight + 200) {
+                    // Keep animating if still on screen
+                    requestAnimationFrame(animate);
+                } else {
+                    // Remove particle
+                    img.remove();
+                    activeParticles--;
+                    if (activeParticles === 0) {
+                        cluster.remove();
+                    }
                 }
-            };
+            }
 
-            // Primary cleanup trigger
-            img.addEventListener('transitionend', cleanup, { once: true });
-
-            // Failsafe: Force cleanup if transitionend misses (browser tab inactive, etc)
-            setTimeout(cleanup, (duration * 1000) + 100); 
+            // Kick off the loop
+            requestAnimationFrame(animate);
         });
     }
 
-    // Start the loop
     createCluster();
 });
